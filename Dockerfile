@@ -19,6 +19,6 @@ COPY --from=0 /github.com/Sacrament0/weather-bot/bin/bot .
 # копируем директорию config в папку config, т.к. приложение не запустится без конфига
 COPY --from=0 /github.com/Sacrament0/weather-bot/configs configs/
 # пробрасываем порт наружу образа
-EXPOSE 80
+EXPOSE 81
 #  запуск команды в консоли. При запуске контейнера будет запускаться команда
 CMD ["./bot"]

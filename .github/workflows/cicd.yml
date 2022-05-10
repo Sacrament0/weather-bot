@@ -65,6 +65,6 @@ jobs:
             # Запускаем новый контейнер из нового изображения
             docker run -e TOKEN -e OWM_API_KEY -d \
             --restart always \
-            --publish 80:80 \
+            --publish 81:81 \
             --name $(echo $CONTAINER_NAME) \
             sacrament0/$(echo $IMAGE_NAME)
