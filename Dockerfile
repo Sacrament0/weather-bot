@@ -9,7 +9,7 @@ RUN go mod download
 # компиляция бинарных файлов в директорию bin с названием файла bot, далее указываем путь к main.go
 RUN go build -o ./bin/bot cmd/bot/main.go
 
-# второй этап сборки
+# второй этап  сборки
 FROM alpine:latest
 # объявляем рабочую папку
 WORKDIR /root/
