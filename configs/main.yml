@@ -1,0 +1,5 @@
+  errors:
+    default: "Что-то пошло не так"
+    unknownCommand: "Я не знаю такой команды :("
+    unknownMessage: "Я не знаю как на это ответить :("
+    unableToGetData: "Не могу получить данные из сервиса погоды :("

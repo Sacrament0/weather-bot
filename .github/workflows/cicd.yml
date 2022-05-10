@@ -1,0 +1,69 @@
+name: CI
+
+# выполняем скрипт, когда происходит пуш в ветку main
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: "weather-bot-image"
+  CONTAINER_NAME: "weather-bot-container"
+
+jobs:
+  build_and_push:
+  # тип сервера на чем запускаетсся джоба
+    runs-on: ubuntu-latest
+
+    steps:
+    # делаем пул ветки репозитория
+      - name: Checkout master
+        uses: actions/checkout@v2
+    
+    # логинимся в докерхабе
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+            username: ${{ secrets.DOCKER_HUB_USERNAME }}
+            password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+    # создаём образ и пушим его в container registry 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+    
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/weather-bot-image:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+      # указываем что для выполнения этого этапа, нужно выполнить предыдущий
+    needs: build_and_push
+
+    steps:
+      # подключаемся к серверу через ssh.
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          envs: IMAGE_NAME,CONTAINER_NAME
+          script: |
+            # Скачиваем образ с докерхаба
+            docker pull sacrament0/$(echo $IMAGE_NAME)
+            # Останавливаем докер контейнер
+            docker stop $(echo $CONTAINER_NAME)
+            # Удалем этот контейнер (старый контейнер)
+            docker rm $(echo $CONTAINER_NAME)
+            # Задаем переменные окружения
+            export TOKEN=${{ secrets.TELEGRAM_TOKEN }}
+            export OWM_API_KEY=${{ secrets.OWM_API_KEY }}
+            # Запускаем новый контейнер из нового изображения
+            docker run -e TOKEN -e OWM_API_KEY -d \
+            --restart always \
+            --name $(echo $CONTAINER_NAME) \
+            sacrament0/$(echo $IMAGE_NAME)
