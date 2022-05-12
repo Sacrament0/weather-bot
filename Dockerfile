@@ -1,22 +1,22 @@
-# Первый этап сборки. Выбор сборки. AS builder оначает, что данный этап будет использоваться как сборщик приложения
+# First stage. Build choice. AS builder means, this stage is used for app building
 FROM golang:1.15-alpine3.12 AS builder
-# копирование файлов из текущей директории, в ту, которая обязательно называется как go module
+# copy files from current directory to new folder with go module name
 COPY . /github.com/Sacrament0/weather-bot/
-# объявляем эту директорию рабочей директорией, чтобы все последующие команды выполнялись в ней
+# mark this directory as working. All commands will be executed there
 WORKDIR /github.com/Sacrament0/weather-bot/
-# скачивание всех зависимостей
+# download all dependences
 RUN go mod download
-# компиляция бинарных файлов в директорию bin с названием файла bot, далее указываем путь к main.go
+# compile bin files to new directory "bin" and name new file "bot", then path to main.go
 RUN go build -o ./bin/bot cmd/bot/main.go
 
-# второй этап  сборки
+# Second stage
 FROM alpine:latest
-# объявляем рабочую папку
+# make workdir
 WORKDIR /root/
-# копируем созданный бинарный файл в рабочую дирректорию. --from=0 означает копирование из предыдущего этапа сборки
-# точка в конце - в текущую директорию
+# copy created bin file "bot" to this direcrory. --from=0 means copy from the previous build stage
+# dot at the end means to the current directory
 COPY --from=0 /github.com/Sacrament0/weather-bot/bin/bot .
-# копируем директорию config в папку config, т.к. приложение не запустится без конфига
+# copy config folder to the new config folder, because app will not start without config
 COPY --from=0 /github.com/Sacrament0/weather-bot/configs configs/
-#  запуск команды в консоли. При запуске контейнера будет запускаться команда
+# starts this command in console. When container starting, this command runs
 CMD ["./bot"]

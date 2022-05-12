@@ -12,38 +12,34 @@ import (
 )
 
 func main() {
-	// Создание конфига
+	// Config creating
 	cfg, err := config.Init()
 	if err != nil {
 		log.Fatal(err, "Не удалось создать конфиг")
 	}
 
-	//---------------------------------------------------------
-
-	// Инициализация запроса погоды через OWM
+	// Weather request init
 	owm, err := owm.NewCurrent("C", "ru", cfg.OWMApiKey)
 	if err != nil {
 		log.Fatal(err, "Не удалось подключиться к сервису")
 	}
 
-	// Инициализация сервиса запроса погоды
+	// Weather service init
 	service := openWM.NewService(cfg, owm)
 
-	//------------------------------------------------------------
-
-	// Создание нового бота
+	// Bot api creating
 	bot, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Флаг для вывода логов в консоли
+	// Bot logs in console
 	bot.Debug = true
 
-	// Оборачивание бота в структуру Bot
+	// Bot creating
 	telegramBot := telegram.NewBot(bot, cfg, service)
 
-	// Запускаем бота
+	// Bot starting
 	if err := telegramBot.Start(); err != nil {
 		log.Fatal(err)
 	}

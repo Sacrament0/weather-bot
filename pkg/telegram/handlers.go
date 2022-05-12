@@ -1,10 +1,6 @@
 package telegram
 
 import (
-	"log"
-
-	"github.com/Sacrament0/weather-bot/pkg/service"
-
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -13,46 +9,44 @@ const (
 	helloMessage = "Привет, чтобы узнать погоду, отправь мне своё местоположение. Для этого в твоей клавиатуре есть кнопка Send Location"
 )
 
-// Метод для обработки КОМАНД ---------------------------------------------------
+// Handle command
 func (b *Bot) handleCommand(message *tgbotapi.Message) error {
 
-	// получения значения команды
+	// check what the command is
 	switch message.Command() {
 
 	case commandStart:
 
-		// обработка команды старт
+		// Start command handling
 		return b.handleStartCommand(message)
 
 	default:
 
-		// обработка неизвестной команды
+		// Unknown command handling
 		return errUnknownCommand
 
 	}
 
 }
 
-// Метод для обработки СООБЩЕНИЙ -------------------------------------------------
+// Handle message
 func (b *Bot) handleMessage(message *tgbotapi.Message) error {
 
-	// Если в сообщении есть указание локации
+	// If there is location in message
 	if message.Location != nil {
 
-		// Создание структуры для ответоного сообщения с указанием:
-		// Chat ID куда отправляется сообщение и текст сообщения
+		// Create response message
 		msg := tgbotapi.NewMessage(message.Chat.ID, helloMessage)
 
-		// формируем ответ
-		// Функция принимает интерфейс
-		response, err := service.CreateWeatherMessage(b.service, message.Location)
+		// Request service for weather
+		response, err := b.service.GetWeather(message.Location)
 		if err != nil {
-			b.HandleError(message.Chat.ID, err)
+			b.HandleError(message.Chat.ID, errUnableToGetData)
 		}
 
 		msg.Text = response
 
-		// Отправка сообщения
+		// Send message
 		b.bot.Send(msg)
 
 		return nil
@@ -64,22 +58,21 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) error {
 	}
 }
 
-// Метод для обработки стартовой команды
+// Handle start command
 func (b *Bot) handleStartCommand(message *tgbotapi.Message) error {
 
-	// приветственное сообщение
+	// Create greeting message
 	msg := tgbotapi.NewMessage(message.Chat.ID, helloMessage)
 
-	// создам кнопку с запросом геолокации
+	// Make button for location request
 	locationButton := tgbotapi.NewKeyboardButtonLocation("Send Location")
 
-	// помещаем кнопку в сообщение
+	// Put button to message
 	msg.ReplyMarkup = tgbotapi.NewReplyKeyboard([]tgbotapi.KeyboardButton{locationButton})
 
-	// Отправка сообщения
+	// Send message
 	_, err := b.bot.Send(msg)
 	if err != nil {
-		log.Println("send hello message failed")
 		return err
 	}
 

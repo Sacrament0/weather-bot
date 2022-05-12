@@ -9,20 +9,21 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-// Структура сервиса
+// Weather service structure
 type Service struct {
 	cfg *config.Config
 	owm *owm.CurrentWeatherData
 }
 
-// конструктор для сервиса
+// Service constructor
 func NewService(cfg *config.Config, owm *owm.CurrentWeatherData) *Service {
 	return &Service{cfg: cfg, owm: owm}
 }
 
-// Получение погоды из OWM
+// Requests weather servise and forms weather message
 func (s *Service) GetWeather(location *tgbotapi.Location) (response string, err error) {
 
+	// Weather service request
 	err = s.owm.CurrentByCoordinates(
 		&owm.Coordinates{
 			Longitude: location.Longitude,
@@ -33,7 +34,7 @@ func (s *Service) GetWeather(location *tgbotapi.Location) (response string, err 
 		return "", err
 	}
 
-	// формируем ответ
+	// Weather message forming
 	message := fmt.Sprintf("Сейчас %v °C, ощущается как %v °C",
 		s.owm.Main.Temp, s.owm.Main.FeelsLike)
 

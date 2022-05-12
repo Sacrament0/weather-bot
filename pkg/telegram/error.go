@@ -7,16 +7,15 @@ import (
 )
 
 var (
-	// ошибка неизвестная команда
 	errUnknownCommand  = errors.New("unknown command")
 	errUnknownMessage  = errors.New("unknown message")
 	errUnableToGetData = errors.New("unable to get data from server")
 )
 
-// Обработка ошибок
+// Handling messages
 func (b *Bot) HandleError(chatID int64, err error) {
 
-	// дефолтное сообщение о неизвестной ошибке
+	// Default error message
 	msg := tgbotapi.NewMessage(chatID, b.cfg.Errors.Default)
 
 	switch err {

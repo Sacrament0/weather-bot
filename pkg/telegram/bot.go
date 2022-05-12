@@ -8,71 +8,68 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-// Структура описывающая бота
+// Bot structure
 type Bot struct {
-	bot *tgbotapi.BotAPI
-	cfg *config.Config
+	bot     *tgbotapi.BotAPI
+	cfg     *config.Config
 	service service.Servicer
 }
 
-// Конструктор для бота. Создает переменную структуру типа Bot и помещает туда созданного бота типа *tgbotapi.BotAPI
-// Почему принимает ссылку - Чтобы не копировать всего бота в метод и не выделять память
-// а также чтобы была возможность изменять данные
+// Bot constructor
 func NewBot(bot *tgbotapi.BotAPI, cfg *config.Config, service service.Servicer) *Bot {
 	return &Bot{bot: bot, cfg: cfg, service: service}
 }
 
-// Создает канал для отправки сообщений и обрабатывает входящие сообщения
+// Creates channel for messages and handle them
 func (b *Bot) Start() error {
 
 	log.Printf("Authorized on account %s", b.bot.Self.UserName)
 
-	// КАНАЛ ДЛЯ ПОЛУЧЕНИЯ СООБЩЕНИЙ
+	// Channel for messages
 	updates, err := b.initUpdatesChannel()
 	if err != nil {
 		return err
 	}
 
-	// ОБРАБОТКА СООБЩЕНИЙ
+	// Handling messages
 	b.handleUpdates(updates)
 
 	return nil
 
 }
 
-// initUpdatesChannel инициализирует канал для получения-передачи сообщений
+// Creates channel for messages
 func (b *Bot) initUpdatesChannel() (tgbotapi.UpdatesChannel, error) {
 
-	// Создание конфигурации для получения обновлений
+	// Configuring channel
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	// Возвращает канал для получения значеий от API
 	return b.bot.GetUpdatesChan(u)
 }
 
-// handleUpdates получает и отправляет сообщения пользователю
+// Getting messages from users and sending messages to users
 func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 
-	// Итерация по каналу
+	// Loop on channel
 	for update := range updates {
-		// если сообщение пустое, скипаем цикл
+		// if message from user is empty, skip iteration
 		if update.Message == nil {
 			continue
 		}
-		// проверка является ли сообщение командой
+		// check if message is command
 		if update.Message.IsCommand() {
 
-			//ОБРАБОТКА КОМАНДЫ -------------------------------------------
+			// Handle command
 			if err := b.handleCommand(update.Message); err != nil {
-				// обработка ошибки
+				// Handle error
 				b.HandleError(update.Message.Chat.ID, err)
 			}
 			continue
 		}
-		// ОБРАБОТКА СООБЩЕНИЯ ---------------------------------------------
+		// Handle message
 		if err := b.handleMessage(update.Message); err != nil {
-			// обработка ошибки
+			// Handle error
 			b.HandleError(update.Message.Chat.ID, err)
 		}
 

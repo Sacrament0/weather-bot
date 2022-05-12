@@ -4,14 +4,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Структура конфига
+// Config structure
 type Config struct {
 	TelegramToken string
 	Errors        Errors
 	OWMApiKey     string
 }
 
-// Структура для хранения ошибок
+// Error structure
 type Errors struct {
 	Default         string `mapstructure:"default"`
 	UnknownCommand  string `mapstructure:"unknownCommand"`
@@ -19,26 +19,29 @@ type Errors struct {
 	UnableToGetData string `mapstructure:"unableToGetData"`
 }
 
-// Инициализация конфига
+// Config init
 func Init() (*Config, error) {
-	// Путь к директории конфига (имя папки)
+
+	// config folder path (folder name)
 	viper.AddConfigPath("configs")
-	// Имя конфига в папке
+
+	// Config name in folder
 	viper.SetConfigName("main")
 
+	// Read config according to the path
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
-	// переменная для хранения конфига
+	// Config variable
 	var cfg Config
 
-	// парсим конфиг из файла
+	// Parse config to Config variable
 	if err := viper.UnmarshalKey("errors", &cfg.Errors); err != nil {
 		return nil, err
 	}
 
-	// парсим переменные окружения
+	// Parse env var
 	if err := parseEnv(&cfg); err != nil {
 		return nil, err
 	}
@@ -46,11 +49,11 @@ func Init() (*Config, error) {
 	return &cfg, nil
 }
 
-// Парсит переменные окружения
+// Parses env var
 func parseEnv(cfg *Config) error {
 
-	// Загружаем переменные из .env в систему
-	// локальный вариант --------------------------------
+	// Download env from .env to system
+	// case for local server --------------------------------
 	// if err := godotenv.Load(); err != nil {
 	// 	log.Print("No .env file found")
 	// }
@@ -58,17 +61,18 @@ func parseEnv(cfg *Config) error {
 	// cfg.TelegramToken, _ = os.LookupEnv("TOKEN")
 	// cfg.OWMApiKey, _ = os.LookupEnv("OWM_API_KEY")
 
-	// серверный вариант ------------------------------
-	// парсим токен и даём ему ключ "token"
+	// case for remote server -------------------------------
+
+	// parse token with key "token"
 	if err := viper.BindEnv("token"); err != nil {
 		return err
 	}
-
+	// parse token with key "api key"
 	if err := viper.BindEnv("owm_api_key"); err != nil {
 		return err
 	}
 
-	// загружаем в кофиг токен по ключу
+	// put parsed config to Config var
 	cfg.TelegramToken = viper.GetString("token")
 	cfg.OWMApiKey = viper.GetString("owm_api_key")
 
