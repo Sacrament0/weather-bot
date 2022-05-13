@@ -1,8 +1,8 @@
 # Weather telegram bot
 This telegram bot can show you weather (temperature, pressure, etc.) according to your geolocation. It has single button to send geolocation to server. 
 ## Try It!
-This app has been deployed! Here is a link 
-[@weather_around_bot](t.me/weather_around_bot)
+This app has been deployed! Here is a link t.me/weather_around_bot
+@weather_around_bot
 
 ## How it works
 Bot uses [Open Weather Map](https://openweathermap.org/) service to get weather forecast. If there is a location in your message, bot sends it to OWM service. OWM handles your location and returns weather data. Finally bot handles weather data, forms weather message and sends it to user.
